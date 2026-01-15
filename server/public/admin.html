@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Painel Push (Render)</title>
+  <title>Painel Push (Render) — Pai Márcio de Oxóssi</title>
 
   <style>
     :root{
@@ -97,7 +97,7 @@
       margin:10px 0 6px;
     }
 
-    input,textarea{
+    input,textarea,select{
       width:100%;
       padding:12px 12px;
       border-radius:14px;
@@ -139,13 +139,13 @@
     }
     #send:hover{ filter:brightness(1.06); }
 
-    #refresh, #openHealth, #openSubs{
+    #refresh, #openHealth, #openSubs, #openTest{
       background: rgba(255,255,255,.08);
       color:#fff;
       border:1px solid rgba(255,255,255,.14);
       box-shadow:none;
     }
-    #refresh:hover, #openHealth:hover, #openSubs:hover{ filter:brightness(1.06); }
+    #refresh:hover, #openHealth:hover, #openSubs:hover, #openTest:hover{ filter:brightness(1.06); }
 
     .status{
       margin-top:12px;
@@ -185,6 +185,13 @@
       margin-top:10px;
     }
 
+    .hint{
+      margin-top:8px;
+      font-size:12px;
+      color:rgba(255,255,255,.78);
+      line-height:1.35;
+    }
+
     @media (min-width:720px){
       button{ width:auto; }
       #send{ min-width: 240px; }
@@ -203,7 +210,7 @@
           </svg>
         </div>
         <div>
-          <h1>Painel de Notificações ✅</h1>
+          <h1>Painel de Notificações — Pai Márcio de Oxóssi ✅</h1>
           <div class="sub">Envie Push para os PWAs registrados (Render → Web Push).</div>
         </div>
       </div>
@@ -213,17 +220,23 @@
         <div class="pill">Inscritos: <b id="subs">0</b></div>
       </div>
 
+      <label for="api">URL da API (Render)</label>
+      <input id="api" placeholder="https://marcio-1.onrender.com" value="https://marcio-1.onrender.com" />
+      <div class="hint">
+        Se você hospedar este painel fora do Render (Hostinger/GitHub), ele precisa apontar para o Render aqui.
+      </div>
+
       <label for="title">Título</label>
-      <input id="title" placeholder="Cartomantes Online" value="Cartomantes Online" />
+      <input id="title" placeholder="Pai Márcio de Oxóssi" value="Pai Márcio de Oxóssi" />
 
       <label for="body">Mensagem</label>
       <textarea id="body" rows="3" placeholder="Escreva a mensagem..."></textarea>
 
       <label for="url">URL ao clicar</label>
-      <input id="url" value="https://marcio2307.github.io/cartomantesonline/inicio.html" />
+      <input id="url" value="https://marcio2307.github.io/cartomantesonline/inicio.html?pwa=true" />
 
       <label for="icon">Ícone (opcional)</label>
-      <input id="icon" value="https://marcio2307.github.io/cartomantesonline/logo.png" />
+      <input id="icon" value="https://marcio2307.github.io/cartomantesonline/logo-v2.png" />
 
       <div class="row">
         <button id="send">Enviar para todos</button>
@@ -233,6 +246,7 @@
       <div class="smallRow">
         <button id="openHealth">Abrir /health</button>
         <button id="openSubs">Abrir /api/subscribers</button>
+        <button id="openTest">Enviar teste (mensagem rápida)</button>
       </div>
 
       <div id="status" class="status">—</div>
@@ -243,8 +257,9 @@
         Testes:
         <div>• <code>/health</code></div>
         <div>• <code>/api/subscribers</code></div>
-        <div style="margin-top:6px; opacity:.9;">
-          Dica: se <code>Inscritos</code> ficar 0, o PWA ainda não chamou <code>/api/subscribe</code>.
+        <div>• <code>/api/send</code></div>
+        <div class="hint">
+          Se a notificação não chegar: geralmente é <b>subscription inválida</b> (VAPID diferente), ou o PWA não está instalado no iPhone.
         </div>
       </div>
     </div>
@@ -254,15 +269,26 @@
     const $ = (id) => document.getElementById(id);
     const setStatus = (m) => $("status").textContent = m;
 
-    const API_BASE = location.origin; // ex: https://marcio-1.onrender.com
-    $("apiHost").textContent = API_BASE.replace("https://","").replace("http://","");
+    function cleanBase(u){ return (u || "").trim().replace(/\/+$/, ""); }
 
     async function safeJson(res){
       const txt = await res.text().catch(()=> "");
       try { return JSON.parse(txt); } catch { return { raw: txt }; }
     }
 
+    function getApiBase(){
+      const v = cleanBase($("api").value);
+      return v || location.origin;
+    }
+
+    function updateApiHost(){
+      const API_BASE = getApiBase();
+      $("apiHost").textContent = API_BASE.replace("https://","").replace("http://","");
+      return API_BASE;
+    }
+
     async function refreshSubs(){
+      const API_BASE = updateApiHost();
       const r = await fetch(API_BASE + "/api/subscribers", { cache: "no-store" });
       const j = await safeJson(r);
 
@@ -276,8 +302,32 @@
 
     $("refresh").onclick = () => refreshSubs().catch(e => setStatus("❌ " + (e?.message || e)));
 
-    $("openHealth").onclick = () => window.open(API_BASE + "/health", "_blank");
-    $("openSubs").onclick = () => window.open(API_BASE + "/api/subscribers", "_blank");
+    $("openHealth").onclick = () => {
+      const API_BASE = updateApiHost();
+      window.open(API_BASE + "/health", "_blank");
+    };
+    $("openSubs").onclick = () => {
+      const API_BASE = updateApiHost();
+      window.open(API_BASE + "/api/subscribers", "_blank");
+    };
+
+    async function sendPush(payload){
+      const API_BASE = updateApiHost();
+      const res = await fetch(API_BASE + "/api/send", {
+        cache:"no-store",
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify(payload)
+      });
+
+      const j = await safeJson(res);
+
+      if(!res.ok){
+        // ✅ melhora o erro na tela para você ver exatamente o motivo
+        throw new Error("Erro no /api/send: " + res.status + " " + (j.error || j.raw || ""));
+      }
+      return j;
+    }
 
     $("send").onclick = async () => {
       try{
@@ -289,23 +339,12 @@
 
         setStatus("Enviando...");
 
-        const res = await fetch(API_BASE + "/api/send", {
-          method:"POST",
-          headers:{"Content-Type":"application/json"},
-          body: JSON.stringify({
-            title: $("title").value,
-            body: msg,
-            url: $("url").value,
-            icon: $("icon").value
-          })
+        const j = await sendPush({
+          title: $("title").value.trim() || "Pai Márcio de Oxóssi",
+          body: msg,
+          url: $("url").value.trim(),
+          icon: $("icon").value.trim()
         });
-
-        const j = await safeJson(res);
-
-        if(!res.ok){
-          setStatus("❌ Erro no servidor: " + res.status + " " + (j.error || j.raw || ""));
-          return;
-        }
 
         setStatus("✅ Enviado. success=" + (j.success ?? 0) + " failed=" + (j.failed ?? 0) + " total=" + (j.total ?? 0));
         await refreshSubs();
@@ -314,6 +353,24 @@
       }
     };
 
+    $("openTest").onclick = async () => {
+      try{
+        setStatus("Enviando teste...");
+        const j = await sendPush({
+          title: "Pai Márcio de Oxóssi ✅",
+          body: "Teste do painel (Render) — " + new Date().toLocaleString("pt-BR"),
+          url: $("url").value.trim(),
+          icon: $("icon").value.trim()
+        });
+        setStatus("✅ Teste enviado. success=" + (j.success ?? 0) + " failed=" + (j.failed ?? 0) + " total=" + (j.total ?? 0));
+        await refreshSubs();
+      }catch(e){
+        setStatus("❌ " + (e?.message || e));
+      }
+    };
+
+    // init
+    updateApiHost();
     refreshSubs().catch((e)=> setStatus("⚠️ " + (e?.message || e)));
   </script>
 </body>
