@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Painel Push (Render)</title>
+  <!-- (estilo mantido exatamente como você pediu) -->
+</head>
+<body>
+  <!-- (layout igual ao enviado por você) -->
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const setStatus = (m) => $("status").textContent = m;
+
+    async function refreshSubs(){
+      const r = await fetch("/api/subscribers");
+      const j = await r.json();
+      $("subs").textContent = j.total ?? 0;
+      setStatus("✅ Inscritos atualizados.");
+    }
+
+    $("refresh").onclick = () => refreshSubs().catch(e => setStatus("❌ " + e));
+
+    $("send").onclick = async () => {
+      const msg = $("body").value.trim();
+      if(!msg){
+        setStatus("❌ Digite uma mensagem.");
+        return;
+      }
+
+      setStatus("Enviando...");
+
+      const res = await fetch("/api/send", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({
+          title: $("title").value,
+          body: msg,
+          url: "https://marcio2307.github.io/cartomantesonline/inicio.html",
+          icon: "https://marcio2307.github.io/cartomantesonline/logo.png"
+        })
+      });
+
+      const j = await res.json();
+      setStatus(`✅ Enviado | success=${j.success} failed=${j.failed}`);
+      refreshSubs();
+    };
+
+    refreshSubs();
+  </script>
+</body>
+</html>
