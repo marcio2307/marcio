@@ -97,7 +97,7 @@
       margin:10px 0 6px;
     }
 
-    input,textarea,select{
+    input,textarea{
       width:100%;
       padding:12px 12px;
       border-radius:14px;
@@ -323,7 +323,6 @@
       const j = await safeJson(res);
 
       if(!res.ok){
-        // ✅ melhora o erro na tela para você ver exatamente o motivo
         throw new Error("Erro no /api/send: " + res.status + " " + (j.error || j.raw || ""));
       }
       return j;
