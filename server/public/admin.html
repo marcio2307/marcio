@@ -16,10 +16,8 @@
       --radius: 18px;
       --btnShadow: 0 14px 30px rgba(0,0,0,.55);
     }
-
     *{ box-sizing:border-box; }
     html,body{ height:100%; }
-
     body{
       margin:0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
@@ -31,9 +29,7 @@
       color:var(--text);
       padding:16px 12px 24px;
     }
-
     .wrap{ max-width: 920px; margin: 0 auto; }
-
     .card{
       background:var(--card);
       border:1px solid var(--line);
@@ -43,7 +39,6 @@
       overflow:hidden;
       position:relative;
     }
-
     .header{
       display:flex;
       align-items:center;
@@ -52,7 +47,6 @@
       border-bottom:1px solid rgba(255,255,255,.10);
       margin-bottom:12px;
     }
-
     .appIcon{
       width:44px;height:44px;
       border-radius:14px;
@@ -63,10 +57,8 @@
       flex:0 0 auto;
     }
     .appIcon svg{ width:22px;height:22px; opacity:.95; }
-
     h1{ margin:0; font-size:16px; font-weight:900; letter-spacing:.2px; }
     .sub{ margin:4px 0 0; font-size:13px; color:var(--muted); line-height:1.35; }
-
     .topRow{
       display:flex;
       align-items:center;
@@ -75,7 +67,6 @@
       flex-wrap:wrap;
       margin:12px 0 10px;
     }
-
     .pill{
       display:inline-flex;
       gap:8px;
@@ -89,14 +80,12 @@
       white-space:nowrap;
     }
     .pill b{ font-weight:900; }
-
     label{
       display:block;
       font-size:12px;
       color:rgba(255,255,255,.82);
       margin:10px 0 6px;
     }
-
     input,textarea{
       width:100%;
       padding:12px 12px;
@@ -110,14 +99,12 @@
     }
     input::placeholder, textarea::placeholder{ color:rgba(255,255,255,.55); }
     textarea{ min-height:120px; resize:vertical; }
-
     .row{
       display:flex;
       gap:10px;
       flex-wrap:wrap;
       margin-top:12px;
     }
-
     button{
       height:52px;
       padding:0 14px;
@@ -130,7 +117,6 @@
       transition: transform .12s ease, filter .18s ease;
     }
     button:active{ transform: translateY(1px); }
-
     #send{
       background: linear-gradient(180deg, rgba(255,255,255,.22) 0%, rgba(255,255,255,.10) 100%);
       color:#fff;
@@ -138,7 +124,6 @@
       box-shadow: var(--btnShadow);
     }
     #send:hover{ filter:brightness(1.06); }
-
     #refresh, #openHealth, #openSubs, #openTest{
       background: rgba(255,255,255,.08);
       color:#fff;
@@ -146,7 +131,6 @@
       box-shadow:none;
     }
     #refresh:hover, #openHealth:hover, #openSubs:hover, #openTest:hover{ filter:brightness(1.06); }
-
     .status{
       margin-top:12px;
       padding:10px 12px;
@@ -158,13 +142,11 @@
       line-height:1.35;
       word-break:break-word;
     }
-
     hr{
       border:0;
       border-top:1px solid rgba(255,255,255,.10);
       margin:14px 0;
     }
-
     .tests{
       color:var(--muted);
       font-size:13px;
@@ -177,21 +159,18 @@
       border:1px solid rgba(255,255,255,.10);
       color:#fff;
     }
-
     .smallRow{
       display:flex;
       gap:10px;
       flex-wrap:wrap;
       margin-top:10px;
     }
-
     .hint{
       margin-top:8px;
       font-size:12px;
       color:rgba(255,255,255,.78);
       line-height:1.35;
     }
-
     @media (min-width:720px){
       button{ width:auto; }
       #send{ min-width: 240px; }
@@ -223,7 +202,7 @@
       <label for="api">URL da API (Render)</label>
       <input id="api" placeholder="https://marcio-1.onrender.com" value="https://marcio-1.onrender.com" />
       <div class="hint">
-        Se você hospedar este painel fora do Render (Hostinger/GitHub), ele precisa apontar para o Render aqui.
+        ✅ Seu painel está em <b>/admin.html</b> e envia por <code>/api/send</code>.
       </div>
 
       <label for="title">Título</label>
@@ -257,9 +236,9 @@
         Testes:
         <div>• <code>/health</code></div>
         <div>• <code>/api/subscribers</code></div>
-        <div>• <code>/api/send</code></div>
+        <div>• <code>/api/send</code> (POST)</div>
         <div class="hint">
-          Se a notificação não chegar: geralmente é <b>subscription inválida</b> (VAPID diferente), ou o PWA não está instalado no iPhone.
+          ⚠️ Não abra <code>/api/send</code> no navegador (GET) — ele é <b>POST</b>. Use o botão do painel.
         </div>
       </div>
     </div>
@@ -368,7 +347,6 @@
       }
     };
 
-    // init
     updateApiHost();
     refreshSubs().catch((e)=> setStatus("⚠️ " + (e?.message || e)));
   </script>
